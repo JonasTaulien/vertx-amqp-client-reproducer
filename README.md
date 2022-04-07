@@ -1,11 +1,11 @@
 # Vert.x AMQP client reproducer
 ## Context
 In our application we are using
-* `vert.x :4.2.6`
+* `vert.x:4.2.6`
 * `vertx-amqp-client:4.2.6`
 * `vertx-rx-java2:4.2.6`
 
-And as a message broker we are using ActiveMQ Artemis in the version `2.20.0`.
+And as a message broker we are using ActiveMQ Artemis in the version `2.21.0`.
 
 ## Prerequisites to run this reproducer
 1. Download and unpack the latest build of ActiveMQ Artemis from
