@@ -18,8 +18,11 @@ repositories {
 }
 
 dependencies {
-    // This dependency is used by the application.
-    implementation("com.google.guava:guava:30.1.1-jre")
+    implementation(platform("io.vertx:vertx-stack-depchain:4.2.6"))
+    implementation("io.vertx:vertx-rx-java2")
+    implementation("io.vertx:vertx-amqp-client")
+
+    implementation("ch.qos.logback:logback-classic:1.2.11")
 }
 
 testing {
