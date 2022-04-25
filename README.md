@@ -16,9 +16,52 @@ And as a message broker we are using ActiveMQ Artemis in the version `2.21.0`.
 ## Problem description
 We are trying to build a resilient connection to our message broker. Resilient means the following to us:
 
-After the successful creation of a sender or receiver, if the sender loses the connection to the message broker, the
-application tries to reconnect until the message broker is present again and the connection could be re-established
+### Retry initial connection attempts
+On application startup, if the message broker is not yet available, retry to connect until it is available.
+We managed to do this by using the `AmqpClientOptions#setReconnectAttempts()` and
+`AmqpClientOptions#setReconnectInterval()` methods.
+This works as long as ActiveMQ Artemis is not started inside a docker container. We implemented a workaround for
+ActiveMq Artemis inside docker. See:
+[InitialRetryVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/initialretry/InitialRetryVerticle.java).
 
-For this to work, we identified the following requirements for the AMQP client. Each requirement also contains a
-description what problems we currently see with this specific requirement.
+Check :)
 
+#### Reproduce (the success)
+0. Make sure you followed the steps from the 'Prerequisites to run this reproducer'-section
+1. Init Artemis by executing (bash)
+
+    ```sh
+    ./init-artemis.sh
+    ```
+    or (windows)
+    ```powershell
+    .\init-artemis.bat
+    ```
+
+2. Run InitialRetryVerticle.java inside your IDE
+3. After a few seconds start Artemis by executing (bash)
+
+    ```sh
+    ./start-artemis.sh
+    ```
+   or (windows)
+    ```powershell
+    .\start-artemis.bat
+    ```
+4. You should be able to the sent message in the Artemis Console at http://localhost:8161/console
+   1. Login with `artemis` and `artemis`
+   2. In the Tree select `0.0.0.0` > `addresses` -> `example_address` -> `queues` -> `anycast` -> `example_address`
+   3. Click on the `More v`-Tab
+   4. Select `Browse Queue`
+
+### Reconnect on connection loss - Sender
+After the successful creation of a sender, if the sender loses the connection to the message broker, the application
+tries to reconnect until the message broker is present again and the connection could be re-established.
+
+For this to work, we identified the following requirements for the AMQP client:
+
+### Reconnect on connection loss - Receiver
+After the successful creation of a receiver, if the receiver loses the connection to the message broker, the application
+tries to reconnect until the message broker is present again and the connection could be re-established.
+
+For this to work, we identified the following requirements for the AMQP client:
