@@ -12,6 +12,15 @@ And as a message broker we are using ActiveMQ Artemis in the version `2.21.0`.
    [here](https://activemq.apache.org/components/artemis/download/)
 2. Make sure artemis (`<download-location>/apache-artemis-2.21.0/bin/artemis`) is available on your PATH
 3. You need at least java 11
+4. Init Artemis by executing (bash)
+
+    ```sh
+    ./init-artemis.sh
+    ```
+    or (windows)
+    ```powershell
+    .\init-artemis.bat
+    ```
 
 ## Problem description
 We are trying to build a resilient connection to our message broker. Resilient means the following to us:
@@ -27,17 +36,7 @@ ActiveMq Artemis inside docker. See:
 Check :)
 
 #### Reproduce (the success)
-0. Make sure you followed the steps from the 'Prerequisites to run this reproducer'-section
-1. Init Artemis by executing (bash)
-
-    ```sh
-    ./init-artemis.sh
-    ```
-    or (windows)
-    ```powershell
-    .\init-artemis.bat
-    ```
-
+1. Make sure you followed the steps from the 'Prerequisites to run this reproducer'-section
 2. Run InitialRetryVerticle.java inside your IDE
 3. After a few seconds start Artemis by executing (bash)
 
