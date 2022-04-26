@@ -1,4 +1,4 @@
-package com.jonastaulien.vertx.amqp.initialretry;
+package com.jonastaulien.vertx.amqp;
 
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
@@ -32,16 +32,17 @@ public class InitialRetryVerticle extends AbstractVerticle {
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
 
-        AmqpClientOptions amqpClientOptions = new AmqpClientOptions()
-                .setHost("localhost")
-                .setPort(5672)
-                .setUsername("artemis")
-                .setPassword("artemis")
-                .setConnectTimeout(5000)
-                // There is no problem with this - It works as expected when ActiveMQ Artemis is NOT started as a
-                //   docker container
-                .setReconnectAttempts(10)
-                .setReconnectInterval(1000);
+        AmqpClientOptions amqpClientOptions
+                = new AmqpClientOptions().setHost("localhost")
+                                         .setPort(5672)
+                                         .setUsername("artemis")
+                                         .setPassword("artemis")
+                                         .setConnectTimeout(5000)
+                                         // There is no problem with this - It works as expected when
+                                         // ActiveMQ Artemis is NOT started as a
+                                         //   docker container
+                                         .setReconnectAttempts(10)
+                                         .setReconnectInterval(1000);
 
         AmqpClient amqpClient = AmqpClient.create(vertx, amqpClientOptions);
 

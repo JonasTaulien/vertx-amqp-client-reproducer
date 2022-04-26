@@ -31,13 +31,14 @@ We managed to do this by using the `AmqpClientOptions#setReconnectAttempts()` an
 `AmqpClientOptions#setReconnectInterval()` methods.
 This works as long as ActiveMQ Artemis is not started inside a docker container. We implemented a workaround for
 ActiveMq Artemis inside docker. See:
-[InitialRetryVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/initialretry/InitialRetryVerticle.java).
+[InitialRetryVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/InitialRetryVerticle.java).
 
 Check :)
 
 #### Reproduce (the success)
 1. Make sure you followed the steps from the 'Prerequisites to run this reproducer'-section
-2. Run InitialRetryVerticle.java inside your IDE
+2. Run [InitialRetryVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/InitialRetryVerticle.java) inside
+your IDE
 3. After a few seconds start Artemis by executing (bash)
 
     ```sh
@@ -47,7 +48,8 @@ Check :)
     ```powershell
     .\start-artemis.bat
     ```
-4. You should be able to the sent message in the Artemis Console at http://localhost:8161/console
+4. You should be able to see the sent message in the Artemis Console at
+[http://localhost:8161/console](http://localhost:8161/console)
    1. Login with `artemis` and `artemis`
    2. In the Tree select `0.0.0.0` > `addresses` -> `example_address` -> `queues` -> `anycast` -> `example_address`
    3. Click on the `More v`-Tab
@@ -57,7 +59,48 @@ Check :)
 After the successful creation of a sender, if the sender loses the connection to the message broker, the application
 tries to reconnect until the message broker is present again and the connection could be re-established.
 
-For this to work, we identified the following requirements for the AMQP client:
+For this to work, the `AmqpSender#rxSendWithAck` method must complete with an error if the connection got lost.
+**But currently we do not get any response back and `AmqpSender#rxSendWithAck` executes indefinitely**.
+
+#### Reproduce (the problem)
+1. Make sure you followed the steps from the 'Prerequisites to run this reproducer'-section
+2. Start Artemis by executing (bash)
+
+    ```sh
+    ./start-artemis.sh
+    ```
+   or (windows)
+    ```powershell
+    .\start-artemis.bat
+    ```
+3. Run [SenderVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/SenderVerticle.java) inside your IDE
+4. Open [http://localhost:8080](http://localhost:8080) in your browser. This will trigger the sending of a message
+   to the message broker. It should succeed with `Successfully send message`.
+5. Stop the execution of Artemis by hitting Ctrl-C or by closing the shell.
+   You will see the following log in the execution of the Verticle
+
+    ```log
+    2022-04-26 12:26:17.821|TRACE|vert.x-eventloop-thread-0|New Proton Event: CONNECTION_REMOTE_CLOSE
+    2022-04-26 12:26:17.823|TRACE|vert.x-eventloop-thread-0|New Proton Event: TRANSPORT_TAIL_CLOSED
+    2022-04-26 12:26:17.823|TRACE|vert.x-eventloop-thread-0|New Proton Event: CONNECTION_LOCAL_CLOSE
+    2022-04-26 12:26:17.823|TRACE|vert.x-eventloop-thread-0|New Proton Event: TRANSPORT_HEAD_CLOSED
+    2022-04-26 12:26:17.823|TRACE|vert.x-eventloop-thread-0|New Proton Event: TRANSPORT_CLOSED
+    2022-04-26 12:26:17.833|TRACE|vert.x-eventloop-thread-0|IdleTimeoutCheck cancelled
+    ```
+
+6. Refresh [http://localhost:8080](http://localhost:8080) or open the URL again.
+   It will log `Trying to send message to message broker` but it will never complete - **There is no way how we can
+   detect that the sender has no connection anymore**
+
+#### Possible solutions
+##### Sender throws error after connection loss
+If `AmqpSender#rxSendWithAck` would respond with an error, we could try to recreate the sender. Then we would be
+able to recover from short-term connection losses.
+
+##### Manually set a timout
+What we currently **can** do is to set a manual timeout for the sending of a message and then to recreate the sender
+after the timout. But considering that the Sender internally already detects that the connection is lost, we would be
+able to fail faster if it would just fail.
 
 ### Reconnect on connection loss - Receiver
 After the successful creation of a receiver, if the receiver loses the connection to the message broker, the application
