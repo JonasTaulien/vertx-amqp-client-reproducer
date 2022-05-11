@@ -15,13 +15,11 @@ public class ReceiverVerticle extends AbstractVerticle {
 
     private static final Logger log = LoggerFactory.getLogger(InitialRetryVerticle.class);
     private final AmqpClient amqpClient;
-    private final Vertx vertx;
 
 
 
-    public ReceiverVerticle(AmqpClient amqpClient, Vertx vertx) {
+    public ReceiverVerticle(AmqpClient amqpClient) {
         this.amqpClient = amqpClient;
-        this.vertx = vertx;
     }
 
 
@@ -38,7 +36,7 @@ public class ReceiverVerticle extends AbstractVerticle {
 
         AmqpClient amqpClient = AmqpClient.create(vertx, amqpClientOptions);
 
-        vertx.rxDeployVerticle(() -> new ReceiverVerticle(amqpClient, vertx), new DeploymentOptions())
+        vertx.rxDeployVerticle(() -> new ReceiverVerticle(amqpClient), new DeploymentOptions())
              .subscribe(
                      did -> log.info("Successfully created receiver"),
                      err -> log.error("Failed to create receiver", err)

@@ -17,13 +17,11 @@ public class SenderVerticle extends AbstractVerticle {
 
     private static final Logger log = LoggerFactory.getLogger(InitialRetryVerticle.class);
     private final AmqpClient amqpClient;
-    private final Vertx vertx;
 
 
 
-    public SenderVerticle(AmqpClient amqpClient, Vertx vertx) {
+    public SenderVerticle(AmqpClient amqpClient) {
         this.amqpClient = amqpClient;
-        this.vertx = vertx;
     }
 
 
@@ -40,7 +38,7 @@ public class SenderVerticle extends AbstractVerticle {
 
         AmqpClient amqpClient = AmqpClient.create(vertx, amqpClientOptions);
 
-        vertx.rxDeployVerticle(() -> new SenderVerticle(amqpClient, vertx), new DeploymentOptions())
+        vertx.rxDeployVerticle(() -> new SenderVerticle(amqpClient), new DeploymentOptions())
              .subscribe(
                      did -> log.info("Successfully created sender"),
                      err -> log.error("Failed to create sender", err)
