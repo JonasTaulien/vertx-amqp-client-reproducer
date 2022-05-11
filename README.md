@@ -89,8 +89,7 @@ For this to work, the `AmqpSender#rxSendWithAck` method must complete with an er
     ```
 
 6. Refresh [http://localhost:8080](http://localhost:8080) or open the URL again.
-   It will log `Trying to send message to message broker` but it will never complete - **There is no way how we can
-   detect that the sender has no connection anymore**
+   It will log `Trying to send message to message broker` but it never completes and runs indefinitely
 
 #### Possible solutions
 ##### Sender throws error after connection loss
@@ -101,6 +100,12 @@ able to recover from short-term connection losses.
 What we currently **can** do is to set a manual timeout for the sending of a message and then to recreate the sender
 after the timout. But considering that the Sender internally already detects that the connection is lost, we would be
 able to fail faster if it would just fail.
+
+##### Detect a disconnected connection using `AmqpSender.connection().isDisconnected()`
+We also found that we can use `AmqpSender.connection().isDisconnected()` to detect a disconnected connection. This
+is a workaround we are currently using. But what, if the connection fails between the two calls of
+`AmqpSender.connection().isDisconnected()` and `AmqpSender#rxSendWithAck`, then we still have the problem that
+`AmqpSender#rxSendWithAck` never completes.
 
 ### Reconnect on connection loss - Receiver
 After the successful creation of a receiver, if the receiver loses the connection to the message broker, the application

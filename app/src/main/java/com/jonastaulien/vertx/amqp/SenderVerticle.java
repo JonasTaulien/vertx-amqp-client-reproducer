@@ -2,6 +2,7 @@ package com.jonastaulien.vertx.amqp;
 
 import io.reactivex.Completable;
 import io.vertx.amqp.AmqpClientOptions;
+import io.vertx.amqp.AmqpSenderOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.reactivex.amqp.AmqpClient;
 import io.vertx.reactivex.amqp.AmqpMessageBuilder;
@@ -35,8 +36,7 @@ public class SenderVerticle extends AbstractVerticle {
                                          .setPort(5672)
                                          .setUsername("artemis")
                                          .setPassword("artemis")
-                                         .setConnectTimeout(5000)
-                                         .setHeartbeat(1000);
+                                         .setConnectTimeout(5000);
 
         AmqpClient amqpClient = AmqpClient.create(vertx, amqpClientOptions);
 
@@ -64,6 +64,12 @@ public class SenderVerticle extends AbstractVerticle {
 
     public void sendMessage(AmqpSender sender, HttpServerRequest request) {
         log.info("Trying to send message to message broker");
+
+        // Possible workaround
+        // if (sender.connection().isDisconnected()) {
+        //    log.error("Connection is disconnected!");
+        //    // TODO: Recreate Sender
+        // }
 
         sender.rxSendWithAck(
                       AmqpMessageBuilder.create()
