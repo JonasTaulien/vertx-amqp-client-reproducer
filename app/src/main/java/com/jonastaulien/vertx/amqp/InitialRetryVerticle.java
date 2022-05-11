@@ -63,7 +63,7 @@ public class InitialRetryVerticle extends AbstractVerticle {
                                   log.warn("Build-in initial reconnect failed. Trying again in 1000ms", err);
 
                                   return Flowable.timer(
-                                          1000, TimeUnit.MILLISECONDS,
+                                          1, TimeUnit.SECONDS,
                                           RxHelper.scheduler(this.vertx.getDelegate())
                                   );
                               }))

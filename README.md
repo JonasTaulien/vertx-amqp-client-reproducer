@@ -107,6 +107,17 @@ is a workaround we are currently using. But what, if the connection fails betwee
 `AmqpSender.connection().isDisconnected()` and `AmqpSender#rxSendWithAck`, then we still have the problem that
 `AmqpSender#rxSendWithAck` never completes.
 
+See [ReconnectSenderVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/ReconnectSenderVerticle.java) for an
+implementation of this.
+
+###### Observed bug with `AmqpSender.rxClose()`
+We call close on the previous sender in case the connection was lost. See `getOrRecreateSender` in
+[ReconnectSenderVerticle.java](./app/src/main/java/com/jonastaulien/vertx/amqp/ReconnectSenderVerticle.java)
+
+But `AmqpSender.rxClose()` does not succeed. We debugged the code and the reason is that, even if
+`AmqpSenderImpl.close()` sets a `closeHandler` on the underlying `ProtonSender`, the `ProtonSender` never calls that
+close handler. That's why the completable never completes.
+
 ### Reconnect on connection loss - Receiver
 After the successful creation of a receiver, if the receiver loses the connection to the message broker, the application
 tries to reconnect until the message broker is present again and the connection could be re-established.
